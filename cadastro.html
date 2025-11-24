@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro - Biblioteca Central de Campina Grande</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>📚 Biblioteca Central de Campina Grande</h1>
+    <nav>
+      <a href="index.html" class="ativo">Início</a>
+      <a href="livros.html">Livros</a>
+      <a href="cadastro.html">Cadastro</a>
+      <a href="contato.html">Contato</a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Cadastro de Usuário</h2>
+    <form id="formCadastro">
+      <label>Nome:</label>
+      <input type="text" id="nome" required>
+
+      <label>Email:</label>
+      <input type="email" id="email" required>
+
+      <label>Senha:</label>
+      <input type="password" id="senha" required>
+
+      <button type="submit" class="botao">Cadastrar</button>
+    </form>
+    <p id="mensagem"></p>
+  </main>
+
+  <footer>
+    <p>© 2025 Biblioteca Central de Campina Grande</p>
+  </footer>
+
+  <script>
+    const form = document.getElementById("formCadastro");
+    const msg = document.getElementById("mensagem");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value.trim();
+
+      if (!nome || !email || !senha) {
+        msg.innerText = "Preencha todos os campos.";
+        return;
+      }
+
+      // Busca usuários já cadastrados
+      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+      // Verifica se o email já existe
+      if (usuarios.some(u => u.email === email)) {
+        msg.innerText = "Este e-mail já está cadastrado.";
+        return;
+      }
+
+      // Adiciona novo usuário
+      usuarios.push({ nome, email, senha });
+      localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+      msg.style.color = "green";
+      msg.innerText = `Usuário ${nome} cadastrado com sucesso!`;
+      form.reset();
+    });
+  </script>
+</body>
+</html>

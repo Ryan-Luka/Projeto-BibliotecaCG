@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Catálogo de Livros - Biblioteca Central</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>📚 Biblioteca Central de Campina Grande</h1>
+  <nav id="menu"></nav>
+</header>
+
+<main>
+ <section class="catalogo">
+
+    <div class="area-esquerda">
+        <h2>Catálogo de Livros</h2>
+        <input type="text" id="buscar" placeholder="🔍 Buscar livro..." class="campo-busca">
+
+        <!-- Chips de categorias selecionadas -->
+        <div id="chipsContainer" class="chips"></div>
+
+        <!-- Botão hambúrguer para filtros -->
+        <div class="hamburguer" id="hamburguer">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
+        <ul id="listaLivros"></ul>
+    </div>
+
+    <aside class="filtros" id="filtros">
+        <h3>Filtros</h3>
+
+        <label>Gênero:</label>
+        <select id="filtroGenero">
+            <option value="">Todos</option>
+        </select>
+
+        <label>Autor:</label>
+        <select id="filtroAutor">
+            <option value="">Todos</option>
+        </select>
+
+        <label>Ano:</label>
+        <select id="filtroAno">
+            <option value="">Todos</option>
+        </select>
+
+        <label>Título:</label>
+        <input type="text" id="filtroTitulo" placeholder="Digite título...">
+    </aside>
+</main>
+
+<footer>
+  <p>© 2025 Biblioteca Central de Campina Grande</p>
+</footer>
+
+<script>
+  // --- MENU DINÂMICO ---
+  const tipo = localStorage.getItem("tipo");
+  const menu = document.getElementById("menu");
+
+  if (tipo === "admin") {
+    menu.innerHTML = `
+      <a href="admin.html">⬅️ Painel Admin</a>
+      <a href="livros.html" class="ativo">Livros</a>
+      <a href="reservas_admin.html">Reservas</a>
+      <a href="devolucoes_admin.html">Devoluções</a>
+      <a href="#" id="logoutLink">👤 Sair</a>
+    `;
+  } else if (tipo === "usuario") {
+    menu.innerHTML = `
+      <a href="livros.html" class="ativo">Livros</a>
+      <a href="contato.html">Contato</a>
+      <a href="perfil.html">Meu Perfil</a>
+      <a href="#" id="logoutLink">👤 Sair</a>
+    `;
+  } else {
+    menu.innerHTML = `
+      <a href="index.html">Início</a>
+      <a href="livros.html" class="ativo">Livros</a>
+      <a href="cadastro.html">Cadastro</a>
+      <a href="contato.html">Contato</a>
+      <a href="login.html" id="loginLink">Login</a>
+    `;
+  }
+
+  const logout = document.getElementById("logoutLink");
+  if (logout) {
+    logout.addEventListener("click", () => {
+      localStorage.setItem("tipo", "");
+      localStorage.setItem("nome", "");
+      localStorage.setItem("email", "");
+      window.location.href = "index.html";
+    });
+  }
+
+  // --- Cadastro inicial de livros ---
+  let livros = JSON.parse(localStorage.getItem("livros")) || [];
+  if (livros.length === 0) {
+    livros = [
+      { titulo: "Harry Potter", autor: "J.K. Rowling", ano: "1997", genero: "Fantasia" },
+      { titulo: "Dom Casmurro", autor: "Machado de Assis", ano: "1899", genero: "Romance" },
+      { titulo: "Frankenstein", autor: "Mary Shelley", ano: "1818", genero: "Terror" },
+      { titulo: "Drácula", autor: "Bram Stoker", ano: "1897", genero: "Terror" },
+      { titulo: "Cemitério Maldito", autor: "Stephen King", ano: "1983", genero: "Terror" },
+      { titulo: "Vidas Secas", autor: "Graciliano Ramos", ano: "1938", genero: "Romance" },
+      { titulo: "O Cortiço", autor: "Aluísio Azevedo", ano: "1890", genero: "Romance" },
+      { titulo: "Meu Pé de Laranja Lima", autor: "José Mauro de Vasconcelos", ano: "1968", genero: "Drama" },
+      { titulo: "Game of Thrones", autor: "George R. R. Martin", ano: "1996", genero: "Fantasia" },
+      { titulo: "O Alienista", autor: "Machado de Assis", ano: "1882", genero: "Conto" }
+    ];
+    localStorage.setItem("livros", JSON.stringify(livros));
+  }
+
+  const lista = document.getElementById("listaLivros");
+  const campoBusca = document.getElementById("buscar");
+  const filtroGenero = document.getElementById("filtroGenero");
+  const filtroAutor = document.getElementById("filtroAutor");
+  const filtroAno = document.getElementById("filtroAno");
+  const filtroTitulo = document.getElementById("filtroTitulo");
+  const chipsContainer = document.getElementById("chipsContainer");
+
+  // --- Preencher selects dinamicamente ---
+  function preencherFiltros() {
+    const generos = [...new Set(livros.map(l => l.genero))];
+    const autores = [...new Set(livros.map(l => l.autor))];
+    const anos = [...new Set(livros.map(l => l.ano))];
+
+    generos.forEach(g => filtroGenero.innerHTML += `<option value="${g}">${g}</option>`);
+    autores.forEach(a => filtroAutor.innerHTML += `<option value="${a}">${a}</option>`);
+    anos.forEach(an => filtroAno.innerHTML += `<option value="${an}">${an}</option>`);
+  }
+  preencherFiltros();
+
+  // --- Atualizar lista com filtros ---
+  function atualizarLista() {
+    lista.innerHTML = "";
+
+    const filtrados = livros.filter(l => {
+      return (
+        (campoBusca.value === "" || l.titulo.toLowerCase().includes(campoBusca.value.toLowerCase()) || l.autor.toLowerCase().includes(campoBusca.value.toLowerCase())) &&
+        (filtroGenero.value === "" || l.genero === filtroGenero.value) &&
+        (filtroAutor.value === "" || l.autor === filtroAutor.value) &&
+        (filtroAno.value === "" || l.ano === filtroAno.value) &&
+        (filtroTitulo.value === "" || l.titulo.toLowerCase().includes(filtroTitulo.value.toLowerCase()))
+      );
+    });
+
+    if (filtrados.length === 0) {
+      lista.innerHTML = "<li style='color:gray;'>Nenhum livro encontrado.</li>";
+      return;
+    }
+
+    filtrados.forEach(livro => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <strong>${livro.titulo}</strong> — ${livro.autor} (${livro.ano}, ${livro.genero})
+        ${tipo === "usuario" ? `<button class="botao" data-titulo="${livro.titulo}">Reservar</button>` : ""}
+      `;
+      lista.appendChild(li);
+    });
+  }
+
+  // --- Eventos dos filtros ---
+  campoBusca.addEventListener("input", atualizarLista);
+  filtroGenero.addEventListener("change", atualizarLista);
+  filtroAutor.addEventListener("change", atualizarLista);
+  filtroAno.addEventListener("change", atualizarLista);
+  filtroTitulo.addEventListener("input", atualizarLista);
+
+  atualizarLista();
+
+    // --- Reserva de livro ---
+  lista.addEventListener("click", e => {
+    if (e.target.tagName === "BUTTON") {
+      const email = localStorage.getItem("email");
+      const titulo = e.target.getAttribute("data-titulo");
+
+      let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+      let emprestimos = JSON.parse(localStorage.getItem("emprestimos")) || [];
+      let devolucoes = JSON.parse(localStorage.getItem("devolucoes")) || [];
+
+      const devolucaoPendente = devolucoes.some(d => d.usuario === email && d.status === "pendente");
+      if (devolucaoPendente) {
+        alert("Você possui uma devolução pendente. Devolva o livro antes de fazer novas reservas.");
+        return;
+      }
+
+      const possuiEmprestado = emprestimos.some(emp => emp.usuario === email && emp.livro === titulo);
+      if (possuiEmprestado) {
+        alert("Você já está com este livro emprestado.");
+        return;
+      }
+
+      const reservaDuplicada = reservas.some(r =>
+        r.usuario === email &&
+        r.livro === titulo &&
+        (r.status === "pendente" || r.status === "aprovada")
+      );
+      if (reservaDuplicada) {
+        alert("Você já possui uma reserva para este livro.");
+        return;
+      }
+
+      // Se passou em todas as regras, adiciona reserva
+      reservas.push({
+        livro: titulo,
+        usuario: email,
+        status: "pendente"
+      });
+
+      localStorage.setItem("reservas", JSON.stringify(reservas));
+      alert("Reserva solicitada com sucesso!");
+    }
+  });
+
+  // --- Hambúrguer para abrir/fechar filtros ---
+  const hamburguer = document.getElementById("hamburguer");
+  const filtros = document.getElementById("filtros");
+
+  hamburguer.addEventListener("click", () => {
+    filtros.classList.toggle("ativo");
+  });
+</script>

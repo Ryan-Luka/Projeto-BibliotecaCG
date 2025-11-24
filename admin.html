@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Administrador - Biblioteca Central</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>📚 Painel Administrativo</h1>
+    <nav>
+      <a href="livros.html">Livros</a>
+      <a href="reservas_admin.html">Reservas Pendentes</a>
+      <a href="devolucoes_admin.html">Devoluções Pendentes</a>
+      <a href="#" id="logoutLink">👤 Admin (Sair)</a>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Cadastrar Novo Livro</h2>
+      <form id="formLivro">
+        <label>Título:</label>
+        <input type="text" id="titulo" required>
+
+        <label>Autor:</label>
+        <input type="text" id="autor" required>
+
+        <label>Ano:</label>
+        <input type="number" id="ano" required>
+
+        <label>Gênero:</label>
+        <input type="text" id="genero" required>
+
+        <button type="submit" class="botao">Adicionar</button>
+      </form>
+    </section>
+
+    <section>
+      <h3>📖 Livros cadastrados</h3>
+      <input type="text" id="buscar" placeholder="🔍 Buscar livro..." class="campo-busca">
+      <ul id="listaLivros"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Biblioteca Central de Campina Grande</p>
+  </footer>
+
+  <script>
+    // --- Proteção de acesso ---
+    const tipo = localStorage.getItem("tipo");
+    if (tipo !== "admin") {
+      alert("Acesso negado! Apenas administradores podem acessar esta página.");
+      window.location.href = "login.html";
+    }
+
+    // --- Logout ---
+    document.getElementById("logoutLink").addEventListener("click", () => {
+      localStorage.setItem("tipo", "");
+      localStorage.setItem("nome", "");
+      localStorage.setItem("email", "");
+      window.location.href = "index.html";
+    });
+
+    // --- Variáveis ---
+    const form = document.getElementById("formLivro");
+    const lista = document.getElementById("listaLivros");
+    const campoBusca = document.getElementById("buscar");
+
+    let livros = JSON.parse(localStorage.getItem("livros")) || [];
+    localStorage.setItem("livros", JSON.stringify(livros));
+
+    // --- Atualiza lista ---
+    function atualizarLista(filtro = "") {
+      lista.innerHTML = "";
+
+      const livrosFiltrados = livros.filter(l =>
+        l.titulo.toLowerCase().includes(filtro.toLowerCase()) ||
+        l.autor.toLowerCase().includes(filtro.toLowerCase()) ||
+        l.genero.toLowerCase().includes(filtro.toLowerCase()) ||
+        l.ano.toString().includes(filtro)
+      );
+
+      if (livrosFiltrados.length === 0) {
+        lista.innerHTML = "<li style='color:gray;'>Nenhum livro encontrado.</li>";
+        return;
+      }
+
+      livrosFiltrados.forEach((livro, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${livro.titulo}</strong> — ${livro.autor} (${livro.ano}, ${livro.genero})
+          <button class="botao-excluir" data-index="${i}">🗑️ Excluir</button>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    // --- Adicionar novo livro ---
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const titulo = document.getElementById("titulo").value.trim();
+      const autor = document.getElementById("autor").value.trim();
+      const ano = document.getElementById("ano").value.trim();
+      const genero = document.getElementById("genero").value.trim();
+
+      if (!titulo || !autor || !ano || !genero) return alert("Preencha todos os campos.");
+
+      livros.push({ titulo, autor, ano, genero });
+      localStorage.setItem("livros", JSON.stringify(livros));
+      atualizarLista();
+      form.reset();
+    });
+
+    // --- Excluir livro ---
+    lista.addEventListener("click", e => {
+      if (e.target.classList.contains("botao-excluir")) {
+        const index = e.target.getAttribute("data-index");
+        if (confirm("Deseja excluir este livro?")) {
+          livros.splice(index, 1);
+          localStorage.setItem("livros", JSON.stringify(livros));
+          atualizarLista(campoBusca.value);
+        }
+      }
+    });
+
+    // --- Busca dinâmica ---
+    campoBusca.addEventListener("input", () => atualizarLista(campoBusca.value));
+
+    // --- Inicializa lista ---
+    atualizarLista();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Devolver Livro - Biblioteca Central</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; padding: 10px; border-bottom: 1px solid #ddd; }
+    .botao {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .botao[disabled] {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    .status-ok { color: green; font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📚 Devolução de Livro</h1>
+  <nav>
+    <a href="perfil.html">⬅ Voltar</a>
+  </nav>
+</header>
+
+<main>
+  <section>
+    <h2>Selecione um livro para devolver</h2>
+    <ul id="lista"></ul>
+    <p id="msg"></p>
+  </section>
+</main>
+
+<footer>
+  <p>© 2025 Biblioteca Central de Campina Grande</p>
+</footer>
+
+<script>
+const email = localStorage.getItem("email");
+let emprestimos = JSON.parse(localStorage.getItem("emprestimos")) || [];
+let devolucoes = JSON.parse(localStorage.getItem("devolucoes")) || [];
+
+const lista = document.getElementById("lista");
+const msg = document.getElementById("msg");
+
+function atualizar() {
+  lista.innerHTML = "";
+  msg.innerText = "";
+
+  const meus = emprestimos.filter(e => e.usuario === email);
+
+  if (meus.length === 0) {
+    lista.innerHTML = "<li>Você não possui livros emprestados.</li>";
+    return;
+  }
+
+  meus.forEach((e, i) => {
+    // Verifica se já existe devolução pendente para este livro
+    const jaSolicitado = devolucoes.some(d => d.usuario === email && d.livro === e.livro && d.status === "pendente");
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${e.livro}
+      <button class="botao" data-index="${i}" ${jaSolicitado ? "disabled" : ""}>
+        ${jaSolicitado ? "Devolução pendente" : "Solicitar devolução"}
+      </button>
+    `;
+    lista.appendChild(li);
+  });
+}
+
+lista.addEventListener("click", e => {
+  if (e.target.tagName === "BUTTON" && !e.target.disabled) {
+    const i = e.target.getAttribute("data-index");
+    const emprestimo = emprestimos[i];
+
+    devolucoes.push({
+      livro: emprestimo.livro,
+      usuario: emprestimo.usuario,
+      status: "pendente"
+    });
+
+    localStorage.setItem("devolucoes", JSON.stringify(devolucoes));
+
+    msg.className = "status-ok";
+    msg.innerText = `✅ Solicitação de devolução enviada para "${emprestimo.livro}". Aguarde confirmação do administrador.`;
+
+    atualizar();
+  }
+});
+
+atualizar();
+</script>
+
+</body>
+</html>
+

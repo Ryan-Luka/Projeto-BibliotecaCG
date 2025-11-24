@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Contato - Biblioteca Central de Campina Grande</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Estilos específicos da página de contato (opcional) */
+    .contato-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .contato-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .contato-grid .full {
+      grid-column: 1 / -1;
+    }
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .status {
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .status.sucesso { color: #2e7d32; }
+    .status.erro { color: #c62828; }
+
+    .campo-busca, input[type="text"], input[type="email"], select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .botao {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+    .botao:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .contatos-info {
+      margin-top: 24px;
+      font-size: 14px;
+      color: #333;
+    }
+    .contatos-info strong { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 Biblioteca Central de Campina Grande</h1>
+    <nav id="menu"></nav>
+  </header>
+
+  <main>
+    <section class="contato-card">
+      <h2>Entre em contato conosco</h2>
+
+      <form id="formContato">
+        <div class="contato-grid">
+          <div class="full">
+            <label for="assunto">Assunto:</label>
+            <select id="assunto" required>
+              <option value="">Selecione...</option>
+              <option value="Dúvida">Dúvida</option>
+              <option value="Sugestão">Sugestão</option>
+              <option value="Problema de acesso">Problema de acesso</option>
+              <option value="Reserva/Devolução">Reserva/Devolução</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" required placeholder="Seu nome completo">
+            <div class="hint" id="hintNome"></div>
+          </div>
+
+          <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required placeholder="voce@exemplo.com">
+            <div class="hint" id="hintEmail"></div>
+          </div>
+
+          <div class="full">
+            <label for="mensagem">Mensagem:</label>
+            <textarea id="mensagem" rows="5" required placeholder="Como podemos ajudar?"></textarea>
+            <div class="hint" id="contador">0/500</div>
+          </div>
+        </div>
+
+        <button type="submit" class="botao" id="btnEnviar">Enviar</button>
+      </form>
+
+      <p id="msgSucesso" class="status" role="status" aria-live="polite"></p>
+
+      <div class="contatos-info">
+        <p><strong>Endereço:</strong> Rua Principal, 123 — Campina Grande, PB</p>
+        <p><strong>Horário:</strong> Seg–Sex, 8h–18h | Sáb, 8h–12h</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Biblioteca Central de Campina Grande</p>
+  </footer>
+
+  <script>
+    // --- MENU DINÂMICO ---
+    const tipo = localStorage.getItem("tipo");
+    const menu = document.getElementById("menu");
+
+    if (tipo === "admin") {
+      menu.innerHTML = `
+        <a href="admin.html">⬅️ Voltar ao Painel Admin</a>
+        <a href="livros.html">Livros</a>
+        <a href="reservas_admin.html">Reservas</a>
+        <a href="devolucoes_admin.html">Devoluções</a>
+        <a href="#" id="logoutLink">👤 Sair</a>
+      `;
+    } else if (tipo === "usuario") {
+      menu.innerHTML = `
+        <a href="livros.html">Livros</a>
+        <a href="contato.html" class="ativo">Contato</a>
+        <a href="perfil.html">Meu Perfil</a>
+        <a href="#" id="logoutLink">👤 Sair</a>
+      `;
+    } else {
+      menu.innerHTML = `
+        <a href="index.html">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="cadastro.html">Cadastro</a>
+        <a href="contato.html" class="ativo">Contato</a>
+        <a href="login.html" id="loginLink">Login</a>
+      `;
+    }
+
+    const logout = document.getElementById("logoutLink");
+    if (logout) {
+      logout.addEventListener("click", () => {
+        localStorage.setItem("tipo", "");
+        localStorage.setItem("nome", "");
+        localStorage.setItem("email", "");
+        window.location.href = "index.html";
+      });
+    }
+
+    // --- Autofill se usuário logado ---
+    const nomeInput = document.getElementById("nome");
+    const emailInput = document.getElementById("email");
+    const mensagemInput = document.getElementById("mensagem");
+    const assuntoSelect = document.getElementById("assunto");
+    const contador = document.getElementById("contador");
+    const msgSucesso = document.getElementById("msgSucesso");
+    const btnEnviar = document.getElementById("btnEnviar");
+
+    const nomeLS = localStorage.getItem("nome") || "";
+    const emailLS = localStorage.getItem("email") || "";
+
+    if (nomeLS) nomeInput.value = nomeLS;
+    if (emailLS) emailInput.value = emailLS;
+
+    // --- Contador de caracteres da mensagem ---
+    const LIMITE = 500;
+    const atualizarContador = () => {
+      const len = mensagemInput.value.length;
+      contador.textContent = `${len}/${LIMITE}`;
+      if (len > LIMITE) {
+        contador.style.color = "#c62828";
+      } else {
+        contador.style.color = "#666";
+      }
+    };
+    mensagemInput.addEventListener("input", atualizarContador);
+    atualizarContador();
+
+    // --- Dicas simples (nome e email) ---
+    const hintNome = document.getElementById("hintNome");
+    const hintEmail = document.getElementById("hintEmail");
+
+    nomeInput.addEventListener("input", () => {
+      hintNome.textContent = nomeInput.value.trim().length < 2 ? "Informe seu nome completo." : "";
+    });
+
+    emailInput.addEventListener("input", () => {
+      const v = emailInput.value.trim();
+      const valido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      hintEmail.textContent = v && !valido ? "Email parece inválido." : "";
+    });
+
+    // --- Persistência local de contatos ---
+    function salvarContato(contato) {
+      const contatos = JSON.parse(localStorage.getItem("contatos")) || [];
+      contatos.push(contato);
+      localStorage.setItem("contatos", JSON.stringify(contatos));
+    }
+
+    // --- Protocolo simples (ID) ---
+    function gerarProtocolo() {
+      const ts = Date.now().toString(36);
+      const rnd = Math.random().toString(36).slice(2, 7);
+      return `CG-${ts}-${rnd}`.toUpperCase();
+    }
+
+    // --- Submit do formulário ---
+    document.getElementById("formContato").addEventListener("submit", e => {
+      e.preventDefault();
+
+      const nome = nomeInput.value.trim();
+      const email = emailInput.value.trim();
+      const mensagem = mensagemInput.value.trim();
+      const assunto = assuntoSelect.value;
+
+      // Validações
+      if (!assunto) {
+        msgSucesso.className = "status erro";
+        msgSucesso.textContent = "Selecione um assunto.";
+        return;
+      }
+      if (!nome || !email || !mensagem) {
+        msgSucesso.className = "status erro";
+        msgSucesso.textContent = "Por favor, preencha todos os campos.";
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msgSucesso.className = "status erro";
+        msgSucesso.textContent = "Email inválido. Verifique e tente novamente.";
+        return;
+      }
+      if (mensagem.length > LIMITE) {
+        msgSucesso.className = "status erro";
+        msgSucesso.textContent = `Mensagem excede ${LIMITE} caracteres. Reduza o texto.`;
+        return;
+      }
+
+      // Desabilita botão (feedback)
+      btnEnviar.disabled = true;
+
+      // Monta objeto e salva localmente
+      const protocolo = gerarProtocolo();
+      const contato = {
+        protocolo,
+        assunto,
+        nome,
+        email,
+        mensagem,
+        data: new Date().toISOString()
+      };
+      salvarContato(contato);
+
+      // Feedback ao usuário
+      msgSucesso.className = "status sucesso";
+      msgSucesso.textContent = `Mensagem enviada com sucesso! Protocolo: ${protocolo}. Entraremos em contato em breve.`;
+
+      // Resetar formulário (mantendo nome/email se vieram do login)
+      assuntoSelect.value = "";
+      mensagemInput.value = "";
+      atualizarContador();
+      if (!nomeLS) nomeInput.value = "";
+      if (!emailLS) emailInput.value = "";
+
+      // Reabilita botão após breve intervalo (simulando envio)
+      setTimeout(() => { btnEnviar.disabled = false; }, 600);
+    });
+  </script>
+</body>
+</html>

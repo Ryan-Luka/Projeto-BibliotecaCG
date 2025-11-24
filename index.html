@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Biblioteca Central de Campina Grande</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>
+      <img src="img/image.png" alt="Logo da Biblioteca" class="logo">
+      Biblioteca Central de Campina Grande
+    </h1>
+
+    <nav id="menu"></nav>
+  </header>
+
+  <main>
+    <section class="banner">
+      <h2>Bem-vindo à nossa Biblioteca</h2>
+      <p>Explore nosso catálogo e descubra obras clássicas e modernas para ampliar seu conhecimento.</p>
+      <a href="livros.html" class="botao">📖 Ver Catálogo de Livros</a>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Biblioteca Central de Campina Grande — Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    const tipo = localStorage.getItem("tipo");
+    const menu = document.getElementById("menu");
+
+    // --- MENU DINÂMICO ---
+    if (tipo === "admin") {
+      menu.innerHTML = `
+        <a href="index.html" class="ativo">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="admin.html">Painel Admin</a>
+        <a href="reservas_admin.html">Reservas</a>
+        <a href="devolucoes_admin.html">Devoluções</a>
+        <a href="#" id="logoutLink">👤 Sair</a>
+      `;
+    } else if (tipo === "usuario") {
+      menu.innerHTML = `
+        <a href="index.html" class="ativo">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="contato.html">Contato</a>
+        <a href="perfil.html">Meu Perfil</a>
+        <a href="#" id="logoutLink">👤 Sair</a>
+      `;
+    } else {
+      menu.innerHTML = `
+        <a href="index.html" class="ativo">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="cadastro.html">Cadastro</a>
+        <a href="contato.html">Contato</a>
+        <a href="login.html" id="loginLink">Login</a>
+      `;
+    }
+
+    // --- Logout ---
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+      logoutLink.addEventListener("click", () => {
+        localStorage.setItem("tipo", "");
+        localStorage.setItem("nome", "");
+        localStorage.setItem("email", "");
+        window.location.href = "index.html";
+      });
+    }
+  </script>
+</body>
+</html>
+

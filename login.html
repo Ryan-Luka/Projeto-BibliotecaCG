@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Biblioteca Central de Campina Grande</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    #mensagem {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    #mensagem.erro { color: red; }
+    #mensagem.sucesso { color: green; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 Biblioteca Central de Campina Grande</h1>
+    <nav id="menu"></nav>
+  </header>
+
+  <main>
+    <h2>Acesso ao Sistema</h2>
+    <form id="formLogin">
+      <label for="email">Email:</label>
+      <input type="email" id="email" required placeholder="Seu e-mail">
+
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" required placeholder="Sua senha">
+
+      <button type="submit" class="botao">Entrar</button>
+    </form>
+    <p id="mensagem"></p>
+  </main>
+
+  <footer>
+    <p>© 2025 Biblioteca Central de Campina Grande</p>
+  </footer>
+
+  <script>
+    // --- MENU DINÂMICO ---
+    const tipo = localStorage.getItem("tipo");
+    const menu = document.getElementById("menu");
+
+    if (tipo === "admin") {
+      menu.innerHTML = `
+        <a href="index.html">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="admin.html">Painel Admin</a>
+        <a href="reservas_admin.html">Reservas</a>
+        <a href="devolucoes_admin.html">Devoluções</a>
+        <a href="#" id="logoutLink">👤 Sair</a>
+      `;
+    } else if (tipo === "usuario") {
+      menu.innerHTML = `
+        <a href="index.html">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="contato.html">Contato</a>
+        <a href="perfil.html">Meu Perfil</a>
+        <a href="#" id="logoutLink">👤 Sair</a>
+      `;
+    } else {
+      menu.innerHTML = `
+        <a href="index.html">Início</a>
+        <a href="livros.html">Livros</a>
+        <a href="cadastro.html">Cadastro</a>
+        <a href="contato.html">Contato</a>
+        <a href="login.html" class="ativo">Login</a>
+      `;
+    }
+
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+      logoutLink.addEventListener("click", () => {
+        localStorage.setItem("tipo", "");
+        localStorage.setItem("nome", "");
+        localStorage.setItem("email", "");
+        window.location.href = "index.html";
+      });
+    }
+
+    // --- LOGIN ---
+    document.getElementById("formLogin").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value.trim();
+      const mensagem = document.getElementById("mensagem");
+
+      // ===== LOGIN ADMIN =====
+      if (email === "admin@biblioteca.com" && senha === "1234") {
+        localStorage.setItem("tipo", "admin");
+        localStorage.setItem("nome", "Administrador");
+        localStorage.setItem("email", email);
+        mensagem.className = "sucesso";
+        mensagem.innerText = "Login realizado como administrador!";
+        setTimeout(() => window.location.href = "admin.html", 1000);
+        return;
+      }
+
+      // ===== LOGIN USUÁRIO COMUM =====
+      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+      const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+
+      if (usuario) {
+        localStorage.setItem("tipo", "usuario");
+        localStorage.setItem("nome", usuario.nome);
+        localStorage.setItem("email", usuario.email);
+        mensagem.className = "sucesso";
+        mensagem.innerText = "Login realizado com sucesso!";
+        setTimeout(() => window.location.href = "perfil.html", 1000);
+      } else {
+        mensagem.className = "erro";
+        mensagem.innerText = "Email ou senha incorretos!";
+      }
+    });
+  </script>
+</body>
+</html>
